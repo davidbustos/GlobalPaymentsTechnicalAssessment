@@ -4,7 +4,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<IQueueService, QueueService>();
+builder.Services.AddSingleton<IQueueService, QueueService>();
+builder.Services.AddSingleton<IElevatorService, ElevatorService>();
+builder.Services.AddHostedService<ElevatorSimulationService>();
 
 var app = builder.Build();
 

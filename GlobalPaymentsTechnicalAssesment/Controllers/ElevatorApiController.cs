@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using GlobalPaymentsTechnicalAssesment.Services;
 using GlobalPaymentsTechnicalAssesment.Models;
-using GlobalPaymentsTechnicalAssesment.Services;
 
 namespace GlobalPaymentsTechnicalAssesment.Controllers
 {
@@ -11,10 +10,12 @@ namespace GlobalPaymentsTechnicalAssesment.Controllers
     public class ElevatorApiController : ControllerBase
     {
         private readonly IQueueService _queueService;
+        private readonly IElevatorService _elevatorService;
 
-        public ElevatorApiController(IQueueService queueService)
+        public ElevatorApiController(IQueueService queueService, IElevatorService elevatorService)
         {
             _queueService = queueService;
+            _elevatorService = elevatorService;
         }
 
         [HttpPost("request-floor")]
@@ -29,17 +30,11 @@ namespace GlobalPaymentsTechnicalAssesment.Controllers
             return Ok("Request added to queue.");
         }
 
-        [HttpGet("next-request")]
-        public async Task<IActionResult> GetNextRequest()
+        [HttpGet("state")]
+        public IActionResult GetElevatorState()
         {
-            var request = await _queueService.DequeueRequestAsync();
-
-            if (request == null)
-            {
-                return NotFound("No pending requests in the queue.");
-            }
-
-            return Ok(request);
+            var state = _elevatorService.GetElevatorState();
+            return Ok(state);
         }
     }
 }
