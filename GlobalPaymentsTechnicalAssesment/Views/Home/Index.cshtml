@@ -1,8 +1,34 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Elevator Simulator</title>
+    <script>
+        async function pollElevatorState() {
+            const response = await fetch('/api/elevatorapi/state');
+            const data = await response.json();
+            document.getElementById('state').innerText = `State: ${data.state}, Current Floor: ${data.currentFloor}`;
+        }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+        setInterval(pollElevatorState, 1000); // Poll every second
+    </script>
+</head>
+<body>
+    <h1>Elevator Simulator</h1>
+    <p id="state">Loading...</p>
+    <button onclick="requestFloor(1)">Go to Floor 1</button>
+    <button onclick="requestFloor(2)">Go to Floor 2</button>
+    <button onclick="requestFloor(3)">Go to Floor 3</button>
+    <button onclick="requestFloor(4)">Go to Floor 4</button>
+    <button onclick="requestFloor(5)">Go to Floor 5</button>
+
+    <script>
+        async function requestFloor(floor) {
+            await fetch('/api/elevatorapi/request-floor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: 'External', floor })
+            });
+        }
+    </script>
+</body>
+</html>
