@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalPaymentsTechnicalAssesment", "GlobalPaymentsTechnicalAssesment\GlobalPaymentsTechnicalAssesment.csproj", "{FD8E4A07-8376-489E-943A-517713650F16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalPaymentsTechnicalAssesment.Tests", "GlobalPaymentsTechnicalAssesment.Tests\GlobalPaymentsTechnicalAssesment.Tests.csproj", "{A4060F0E-4AFF-4EEF-8EC4-3B725F2F1329}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{FD8E4A07-8376-489E-943A-517713650F16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD8E4A07-8376-489E-943A-517713650F16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD8E4A07-8376-489E-943A-517713650F16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4060F0E-4AFF-4EEF-8EC4-3B725F2F1329}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4060F0E-4AFF-4EEF-8EC4-3B725F2F1329}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4060F0E-4AFF-4EEF-8EC4-3B725F2F1329}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4060F0E-4AFF-4EEF-8EC4-3B725F2F1329}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
