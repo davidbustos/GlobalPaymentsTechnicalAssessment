@@ -1,35 +1,44 @@
-﻿using RabbitMQ.Client;
-using Newtonsoft.Json;
-using System.Text;
+﻿using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using GlobalPaymentsTechnicalAssesment.Models;
+using Newtonsoft.Json;
 
 namespace GlobalPaymentsTechnicalAssesment.Services
 {
     public interface IQueueService
     {
         Task EnqueueRequestAsync(FloorRequest request);
+        Task<FloorRequest> DequeueRequestAsync();
     }
 
     public class QueueService : IQueueService
     {
-        private readonly IConnection _connection;
-        private readonly IModel _channel;
-        private const string QueueName = "elevator-queue";
-
-        public QueueService()
-        {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
-            _channel.QueueDeclare(QueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
-        }
+        // Thread-safe in-memory queue
+        private static readonly ConcurrentQueue<FloorRequest> _queue = new();
 
         public Task EnqueueRequestAsync(FloorRequest request)
         {
-            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
-            _channel.BasicPublish(exchange: "", routingKey: QueueName, basicProperties: null, body: body);
+            // Add the request to the queue
+            _queue.Enqueue(request);
+
+            // Log (optional)
+            Console.WriteLine($"[QueueService] Enqueued request: {JsonConvert.SerializeObject(request)}");
+
             return Task.CompletedTask;
+        }
+
+        public Task<FloorRequest> DequeueRequestAsync()
+        {
+            // Try to dequeue a request
+            if (_queue.TryDequeue(out var request))
+            {
+                // Log (optional)
+                Console.WriteLine($"[QueueService] Dequeued request: {JsonConvert.SerializeObject(request)}");
+                return Task.FromResult(request);
+            }
+
+            // Return null if the queue is empty
+            return Task.FromResult<FloorRequest>(null);
         }
     }
 }

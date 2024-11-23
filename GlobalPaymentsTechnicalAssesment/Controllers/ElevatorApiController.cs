@@ -1,12 +1,13 @@
-﻿using GlobalPaymentsTechnicalAssesment.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using GlobalPaymentsTechnicalAssesment.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using GlobalPaymentsTechnicalAssesment.Models;
+using GlobalPaymentsTechnicalAssesment.Services;
 
 namespace GlobalPaymentsTechnicalAssesment.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ElevatorApiController : ControllerBase
     {
         private readonly IQueueService _queueService;
@@ -25,7 +26,20 @@ namespace GlobalPaymentsTechnicalAssesment.Controllers
             }
 
             await _queueService.EnqueueRequestAsync(request);
-            return Ok("Request queued successfully.");
+            return Ok("Request added to queue.");
+        }
+
+        [HttpGet("next-request")]
+        public async Task<IActionResult> GetNextRequest()
+        {
+            var request = await _queueService.DequeueRequestAsync();
+
+            if (request == null)
+            {
+                return NotFound("No pending requests in the queue.");
+            }
+
+            return Ok(request);
         }
     }
 }
