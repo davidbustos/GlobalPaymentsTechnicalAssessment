@@ -13,6 +13,12 @@
             document.getElementById('state').innerText = `State: ${data.state}`;
             document.getElementById('doorState').innerText = `Door State: ${data.doorState}`;
             document.getElementById('position').innerText = `Position: ${data.position.toFixed(2)} meters`;
+
+            // Transition to internal controls when the doors are opened
+            if (data.doorState === "Opened" && !isInside) {
+                isInside = true;
+                updateControls(); // Switch to internal controls
+            }
         }
 
         async function pollQueueAndHistory() {
@@ -98,6 +104,7 @@
         setInterval(pollElevatorState, 500); // Poll every 500ms
         setInterval(pollQueueAndHistory, 2000); // Poll every 2 seconds
     </script>
+
 </head>
 <body>
     <h1>Elevator Simulator</h1>
