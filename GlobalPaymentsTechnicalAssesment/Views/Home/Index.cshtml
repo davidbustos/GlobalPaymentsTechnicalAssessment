@@ -4,6 +4,7 @@
     <title>Elevator Simulator</title>
     <script>
         let isInside = false; // Tracks whether the user is inside the elevator
+        let previousState = ""; // Tracks the previous state to detect state changes
 
         async function pollElevatorState() {
             const response = await fetch('/api/elevatorapi/state');
@@ -14,40 +15,26 @@
             document.getElementById('doorState').innerText = `Door State: ${data.doorState}`;
             document.getElementById('position').innerText = `Position: ${data.position.toFixed(2)} meters`;
 
+            // Handle state changes
+            if (data.state === "Idle" && data.doorState === "Closed") {
+                // If the trip is completed, reset to external controls
+                if (isInside) {
+                    isInside = false; // Exit the elevator
+                    document.getElementById('fromFloor').value = data.currentFloor; // Update dropdown to current floor
+                    updateControls(); // Switch to external controls
+                }
+            }
+
             // Transition to internal controls when the doors are opened
             if (data.doorState === "Opened" && !isInside) {
                 isInside = true;
                 updateControls(); // Switch to internal controls
             }
+
+            previousState = data.state; // Update the previous state
         }
 
-        async function pollQueueAndHistory() {
-            const queueResponse = await fetch('/api/elevatorapi/queue');
-            const queueData = await queueResponse.json();
-
-            const historyResponse = await fetch('/api/elevatorapi/history');
-            const historyData = await historyResponse.json();
-
-            // Update current queue
-            const queueList = document.getElementById('currentQueue');
-            queueList.innerHTML = '';
-            queueData.forEach(req => {
-                const li = document.createElement('li');
-                li.textContent = `Floor: ${req.floor}, Source: ${req.source}`;
-                queueList.appendChild(li);
-            });
-
-            // Update history log
-            const historyList = document.getElementById('historyLog');
-            historyList.innerHTML = '';
-            historyData.forEach(req => {
-                const li = document.createElement('li');
-                li.textContent = `Floor: ${req.floor}, Source: ${req.source}, Processed At: ${new Date(req.processedAt).toLocaleString()}`;
-                historyList.appendChild(li);
-            });
-        }
-
-                async function handleExternalRequest(direction) {
+        async function handleExternalRequest(direction) {
             const fromFloor = parseInt(document.getElementById('fromFloor').value);
 
             const payload = {
@@ -67,7 +54,7 @@
             }
         }
 
-                async function handleInternalRequest(targetFloor) {
+        async function handleInternalRequest(targetFloor) {
             const payload = {
                 source: "Internal", // Correctly set the source
                 floor: targetFloor, // Target floor
@@ -84,7 +71,6 @@
                 console.error(`Failed to enqueue internal request: ${response.statusText}`);
             }
         }
-
 
         function updateControls() {
             const fromFloor = parseInt(document.getElementById('fromFloor').value);
@@ -125,6 +111,36 @@
 
         setInterval(pollElevatorState, 500); // Poll every 500ms
         setInterval(pollQueueAndHistory, 2000); // Poll every 2 seconds
+
+                async function pollQueueAndHistory() {
+            try {
+                const queueResponse = await fetch('/api/elevatorapi/queue');
+                const queueData = await queueResponse.json();
+
+                const historyResponse = await fetch('/api/elevatorapi/history');
+                const historyData = await historyResponse.json();
+
+                // Update current queue
+                const queueList = document.getElementById('currentQueue');
+                queueList.innerHTML = '';
+                queueData.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = `Floor: ${req.floor}, Source: ${req.source}`;
+                    queueList.appendChild(li);
+                });
+
+                // Update history log
+                const historyList = document.getElementById('historyLog');
+                historyList.innerHTML = '';
+                historyData.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = `Floor: ${req.floor}, Source: ${req.source}, Processed At: ${new Date(req.processedAt).toLocaleString()}`;
+                    historyList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error polling queue and history:', error);
+            }
+        }
     </script>
 
 </head>
