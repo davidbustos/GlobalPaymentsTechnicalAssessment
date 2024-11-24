@@ -22,23 +22,51 @@ namespace GlobalPaymentsTechnicalAssesment.Services
 
             // Simulate moving
             _state.State = "Moving";
-            var distance = Math.Abs(request.Floor - _state.CurrentFloor) * _state.FloorHeight;
-            var travelTime = distance / _state.Speed;
+            var targetPosition = request.Floor * _state.FloorHeight;
+            var travelTime = (int)(Math.Abs(targetPosition - _state.Position) / _state.Speed * 1000);
 
-            for (double t = 0; t < travelTime; t += 0.1)
+            while (_state.Position != targetPosition)
             {
-                _state.Position += (_state.Speed * 0.1) * Math.Sign(request.Floor - _state.CurrentFloor);
-                await Task.Delay(100); // Update every 100ms
+                // Move towards the target position
+                if (_state.Position < targetPosition)
+                {
+                    _state.Position += _state.Speed * 0.1;
+                    if (_state.Position >= targetPosition)
+                    {
+                        _state.Position = targetPosition;
+                    }
+                }
+                else
+                {
+                    _state.Position -= _state.Speed * 0.1;
+                    if (_state.Position <= targetPosition)
+                    {
+                        _state.Position = targetPosition;
+                    }
+                }
+
+                // Update current floor dynamically
+                _state.CurrentFloor = (int)(_state.Position / _state.FloorHeight) + 1;
+
+                // Delay to simulate real-time movement
+                await Task.Delay(100);
             }
 
-            _state.Position = request.Floor * _state.FloorHeight;
+            // Elevator reaches the target floor
             _state.CurrentFloor = request.Floor;
-
-            // Simulate door opening
             _state.State = "Opening";
             _state.DoorState = "Opening";
+
+            // Simulate door opening
             await Task.Delay(_state.TimeToOpenDoors * 1000);
             _state.DoorState = "Opened";
+
+            // Simulate door closing after a short delay
+            await Task.Delay(2000); // Door remains open for 2 seconds
+            _state.State = "Closing";
+            _state.DoorState = "Closing";
+            await Task.Delay(_state.TimeToCloseDoors * 1000);
+            _state.DoorState = "Closed";
 
             // Return to idle
             _state.State = "Idle";
