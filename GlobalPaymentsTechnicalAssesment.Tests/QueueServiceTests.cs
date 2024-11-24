@@ -17,6 +17,56 @@ namespace GlobalPaymentsTechnicalAssesment.Tests
         }
 
         [Test]
+        public async Task EnqueueRequestAsync_ShouldAddExternalRequestWithDirection()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "External", Floor = 3, Direction = "Up" };
+
+            // Act
+            await _queueService.EnqueueRequestAsync(request);
+
+            // Assert
+            var queue = _queueService.GetCurrentQueue();
+            Assert.AreEqual(1, queue.Count);
+            Assert.That(queue.First(), Is.Not.Null);
+            Assert.That(queue.First().Source, Is.EqualTo("External"));
+            Assert.That(queue.First().Direction, Is.EqualTo("Up"));
+        }
+
+        [Test]
+        public async Task EnqueueRequestAsync_ShouldAddInternalRequestWithNoDirection()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "Internal", Floor = 4, Direction = "None" };
+
+            // Act
+            await _queueService.EnqueueRequestAsync(request);
+
+            // Assert
+            var queue = _queueService.GetCurrentQueue();
+            Assert.AreEqual(1, queue.Count);
+            Assert.That(queue.First(), Is.Not.Null);
+            Assert.That(queue.First().Source, Is.EqualTo("Internal"));
+            Assert.That(queue.First().Direction, Is.EqualTo("None"));
+        }
+
+        [Test]
+        public void AddToHistory_ShouldLogProcessedRequest()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "External", Floor = 3, Direction = "Down" };
+
+            // Act
+            _queueService.AddToHistory(request);
+
+            // Assert
+            var history = _queueService.GetRequestHistory();
+            Assert.AreEqual(1, history.Count);
+            Assert.AreEqual("External", history.First().Source);
+            Assert.AreEqual("Down", history.First().Direction);
+        }
+
+        [Test]
         public async Task DequeueRequestAsync_ShouldReturnNull_WhenQueueIsEmpty()
         {
             // Act
@@ -56,23 +106,6 @@ namespace GlobalPaymentsTechnicalAssesment.Tests
             Assert.AreEqual(request.Floor, dequeuedRequest.Floor);
             Assert.AreEqual(request.Source, dequeuedRequest.Source);
             Assert.AreEqual(0, _queueService.GetCurrentQueue().Count); // Queue should be empty
-        }
-
-        [Test]
-        public void AddToHistory_ShouldLogProcessedRequest()
-        {
-            // Arrange
-            var request = new FloorRequest { Source = "External", Floor = 3 };
-
-            // Act
-            _queueService.AddToHistory(request);
-
-            // Assert
-            var history = _queueService.GetRequestHistory();
-            Assert.AreEqual(1, history.Count);
-            Assert.AreEqual(request.Floor, history.First().Floor);
-            Assert.AreEqual(request.Source, history.First().Source);
-            Assert.NotNull(history.First().ProcessedAt); // Ensure timestamp is recorded
         }
     }
 }

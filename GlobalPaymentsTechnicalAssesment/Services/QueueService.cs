@@ -50,7 +50,8 @@ namespace GlobalPaymentsTechnicalAssesment.Services
             {
                 Source = request.Source,
                 Floor = request.Floor,
-                ProcessedAt = DateTime.Now
+                ProcessedAt = DateTime.Now,
+                Direction = request.Direction
             });
         }
     }

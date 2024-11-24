@@ -20,6 +20,61 @@ namespace GlobalPaymentsTechnicalAssesment.Tests
         }
 
         [Test]
+        public async Task ProcessFloorRequestAsync_ShouldHandleExternalRequest()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "External", Floor = 3, Direction = "Up" };
+
+            // Act
+            await _elevatorService.ProcessFloorRequestAsync(request);
+
+            // Assert
+            var state = _elevatorService.GetElevatorState();
+            Assert.AreEqual(3, state.CurrentFloor);
+            Assert.AreEqual("Idle", state.State); // Final state should be Idle
+            Assert.AreEqual("Closed", state.DoorState);
+            _queueServiceMock.Verify(q => q.AddToHistory(It.Is<FloorRequest>(r => r.Floor == 3 && r.Source == "External")), Times.Once);
+        }
+
+        [Test]
+        public async Task ProcessFloorRequestAsync_ShouldHandleInternalRequest()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "Internal", Floor = 4, Direction = "None" };
+
+            // Act
+            await _elevatorService.ProcessFloorRequestAsync(request);
+
+            // Assert
+            var state = _elevatorService.GetElevatorState();
+            Assert.AreEqual(4, state.CurrentFloor);
+            Assert.AreEqual("Idle", state.State);
+            Assert.AreEqual("Closed", state.DoorState);
+            _queueServiceMock.Verify(q => q.AddToHistory(It.Is<FloorRequest>(r => r.Floor == 4 && r.Source == "Internal")), Times.Once);
+        }
+
+        [Test]
+        public async Task ProcessFloorRequestAsync_ShouldSimulateStateTransitions()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "External", Floor = 2, Direction = "Down" };
+
+            // Act
+            var task = _elevatorService.ProcessFloorRequestAsync(request);
+
+            // Simulate intermediate polling
+            await Task.Delay(500); // Wait for elevator to start moving
+            var stateWhileMoving = _elevatorService.GetElevatorState();
+            Assert.AreEqual("Moving", stateWhileMoving.State);
+
+            // Wait for elevator to complete the trip
+            await task;
+            var finalState = _elevatorService.GetElevatorState();
+            Assert.AreEqual(2, finalState.CurrentFloor);
+            Assert.AreEqual("Closed", finalState.DoorState);
+        }
+
+        [Test]
         public async Task ProcessFloorRequestAsync_ShouldUpdateCurrentFloor()
         {
             // Arrange

@@ -22,6 +22,52 @@ namespace GlobalPaymentsTechnicalAssesment.Tests
             _elevatorServiceMock = new Mock<IElevatorService>();
             _controller = new ElevatorApiController(_queueServiceMock.Object, _elevatorServiceMock.Object);
         }
+        [Test]
+        public async Task RequestFloor_ShouldAcceptExternalRequestWithDirection()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "External", Floor = 2, Direction = "Up" };
+
+            // Act
+            var result = await _controller.RequestFloor(request);
+
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            var okResult = result as OkObjectResult;
+            Assert.AreEqual("Request added to queue.", okResult.Value);
+            _queueServiceMock.Verify(q => q.EnqueueRequestAsync(It.IsAny<FloorRequest>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RequestFloor_ShouldAcceptInternalRequestWithNoDirection()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "Internal", Floor = 3, Direction = "None" };
+
+            // Act
+            var result = await _controller.RequestFloor(request);
+
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            var okResult = result as OkObjectResult;
+            Assert.AreEqual("Request added to queue.", okResult.Value);
+            _queueServiceMock.Verify(q => q.EnqueueRequestAsync(It.IsAny<FloorRequest>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RequestFloor_ShouldRejectInvalidRequest()
+        {
+            // Arrange
+            var request = new FloorRequest { Source = "External", Floor = 6, Direction = "Up" }; // Invalid floor
+
+            // Act
+            var result = await _controller.RequestFloor(request);
+
+            // Assert
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.AreEqual("Floor must be between 1 and 5.", badRequestResult.Value);
+        }
 
         [Test]
         public async Task RequestFloor_ShouldReturnOk_WhenFloorIsValid()
