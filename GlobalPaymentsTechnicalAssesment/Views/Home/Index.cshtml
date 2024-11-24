@@ -6,15 +6,23 @@
         async function pollElevatorState() {
             const response = await fetch('/api/elevatorapi/state');
             const data = await response.json();
-            document.getElementById('state').innerText = `State: ${data.state}, Current Floor: ${data.currentFloor}`;
+
+            document.getElementById('currentFloor').innerText = `Current Floor: ${data.currentFloor}`;
+            document.getElementById('state').innerText = `State: ${data.state}`;
+            document.getElementById('doorState').innerText = `Door State: ${data.doorState}`;
+            document.getElementById('position').innerText = `Position: ${data.position.toFixed(2)} meters`;
         }
 
-        setInterval(pollElevatorState, 1000); // Poll every second
+        setInterval(pollElevatorState, 500); // Poll every 500ms
     </script>
 </head>
 <body>
     <h1>Elevator Simulator</h1>
-    <p id="state">Loading...</p>
+    <p id="currentFloor">Current Floor: Loading...</p>
+    <p id="state">State: Loading...</p>
+    <p id="doorState">Door State: Loading...</p>
+    <p id="position">Position: Loading...</p>
+
     <button onclick="requestFloor(1)">Go to Floor 1</button>
     <button onclick="requestFloor(2)">Go to Floor 2</button>
     <button onclick="requestFloor(3)">Go to Floor 3</button>
