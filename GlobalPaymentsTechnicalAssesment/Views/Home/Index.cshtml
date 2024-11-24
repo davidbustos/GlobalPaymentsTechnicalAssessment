@@ -47,22 +47,44 @@
             });
         }
 
-        async function handleExternalRequest(direction) {
-            const fromFloor = document.getElementById('fromFloor').value;
-            await fetch('/api/elevatorapi/request-floor', {
+                async function handleExternalRequest(direction) {
+            const fromFloor = parseInt(document.getElementById('fromFloor').value);
+
+            const payload = {
+                source: "External", // Correctly set the source
+                floor: fromFloor,  // Floor from the dropdown
+                direction: direction // "Up" or "Down"
+            };
+
+            const response = await fetch('/api/elevatorapi/request-floor', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ source: 'External', floor: parseInt(fromFloor), direction })
+                body: JSON.stringify(payload)
             });
+
+            if (!response.ok) {
+                console.error(`Failed to enqueue external request: ${response.statusText}`);
+            }
         }
 
-        async function handleInternalRequest(targetFloor) {
-            await fetch('/api/elevatorapi/request-floor', {
+                async function handleInternalRequest(targetFloor) {
+            const payload = {
+                source: "Internal", // Correctly set the source
+                floor: targetFloor, // Target floor
+                direction: "None"   // Default direction for internal requests
+            };
+
+            const response = await fetch('/api/elevatorapi/request-floor', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ source: 'Internal', floor: targetFloor })
+                body: JSON.stringify(payload)
             });
+
+            if (!response.ok) {
+                console.error(`Failed to enqueue internal request: ${response.statusText}`);
+            }
         }
+
 
         function updateControls() {
             const fromFloor = parseInt(document.getElementById('fromFloor').value);
