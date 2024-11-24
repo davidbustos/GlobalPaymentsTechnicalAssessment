@@ -65,5 +65,45 @@ namespace GlobalPaymentsTechnicalAssesment.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(state, result.Value);
         }
+
+        [Test]
+        public void GetCurrentQueue_ShouldReturnQueue()
+        {
+            // Arrange
+            var queue = new List<FloorRequest>
+            {
+                new FloorRequest { Source = "External", Floor = 2 }
+            };
+            _queueServiceMock.Setup(q => q.GetCurrentQueue()).Returns(queue);
+
+            // Act
+            var result = _controller.GetCurrentQueue() as OkObjectResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultQueue = result.Value as List<FloorRequest>;
+            Assert.AreEqual(1, resultQueue.Count);
+            Assert.AreEqual(2, resultQueue[0].Floor);
+        }
+
+        [Test]
+        public void GetRequestHistory_ShouldReturnHistory()
+        {
+            // Arrange
+            var history = new List<ProcessedRequest>
+            {
+                new ProcessedRequest { Source = "External", Floor = 3, ProcessedAt = System.DateTime.Now }
+            };
+            _queueServiceMock.Setup(q => q.GetRequestHistory()).Returns(history);
+
+            // Act
+            var result = _controller.GetRequestHistory() as OkObjectResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+            var resultHistory = result.Value as List<ProcessedRequest>;
+            Assert.AreEqual(1, resultHistory.Count);
+            Assert.AreEqual(3, resultHistory[0].Floor);
+        }
     }
 }
