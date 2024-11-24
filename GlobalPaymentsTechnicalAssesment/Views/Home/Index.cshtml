@@ -3,6 +3,8 @@
 <head>
     <title>Elevator Simulator</title>
     <script>
+        let isInside = false; // Tracks whether the user is inside the elevator
+
         async function pollElevatorState() {
             const response = await fetch('/api/elevatorapi/state');
             const data = await response.json();
@@ -39,6 +41,60 @@
             });
         }
 
+        async function handleExternalRequest(direction) {
+            const fromFloor = document.getElementById('fromFloor').value;
+            await fetch('/api/elevatorapi/request-floor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: 'External', floor: parseInt(fromFloor), direction })
+            });
+        }
+
+        async function handleInternalRequest(targetFloor) {
+            await fetch('/api/elevatorapi/request-floor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: 'Internal', floor: targetFloor })
+            });
+        }
+
+        function updateControls() {
+            const fromFloor = parseInt(document.getElementById('fromFloor').value);
+            const externalControls = document.getElementById('externalControls');
+            const internalControls = document.getElementById('internalControls');
+
+            // Show external or internal controls
+            if (!isInside) {
+                externalControls.style.display = 'block';
+                internalControls.style.display = 'none';
+
+                // Adjust buttons based on selected floor
+                if (fromFloor === 1) {
+                    externalControls.innerHTML = `<button onclick="handleExternalRequest('Up')">Call Up</button>`;
+                } else if (fromFloor === 5) {
+                    externalControls.innerHTML = `<button onclick="handleExternalRequest('Down')">Call Down</button>`;
+                } else {
+                    externalControls.innerHTML = `
+                        <button onclick="handleExternalRequest('Up')">Call Up</button>
+                        <button onclick="handleExternalRequest('Down')">Call Down</button>
+                    `;
+                }
+            } else {
+                externalControls.style.display = 'none';
+                internalControls.style.display = 'block';
+
+                // Render floor buttons
+                internalControls.innerHTML = [1, 2, 3, 4, 5]
+                    .map(floor => `<button onclick="handleInternalRequest(${floor})">Go to Floor ${floor}</button>`)
+                    .join('');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fromFloor').addEventListener('change', updateControls);
+            updateControls();
+        });
+
         setInterval(pollElevatorState, 500); // Poll every 500ms
         setInterval(pollQueueAndHistory, 2000); // Poll every 2 seconds
     </script>
@@ -53,26 +109,22 @@
     </div>
 
     <h2>Controls</h2>
-    <button onclick="requestFloor(1)">Go to Floor 1</button>
-    <button onclick="requestFloor(2)">Go to Floor 2</button>
-    <button onclick="requestFloor(3)">Go to Floor 3</button>
-    <button onclick="requestFloor(4)">Go to Floor 4</button>
-    <button onclick="requestFloor(5)">Go to Floor 5</button>
+    <label for="fromFloor">From Floor:</label>
+    <select id="fromFloor">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+    </select>
+
+    <div id="externalControls" style="display: none;"></div>
+    <div id="internalControls" style="display: none;"></div>
 
     <h2>Current Queue</h2>
     <ul id="currentQueue">Loading...</ul>
 
     <h2>History Log</h2>
     <ul id="historyLog">Loading...</ul>
-
-    <script>
-        async function requestFloor(floor) {
-            await fetch('/api/elevatorapi/request-floor', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ source: 'External', floor })
-            });
-        }
-    </script>
 </body>
 </html>
