@@ -36,5 +36,19 @@ namespace GlobalPaymentsTechnicalAssesment.Controllers
             var state = _elevatorService.GetElevatorState();
             return Ok(state);
         }
+
+        [HttpGet("queue")]
+        public IActionResult GetCurrentQueue()
+        {
+            var queue = _queueService.GetCurrentQueue();
+            return Ok(queue);
+        }
+
+        [HttpGet("history")]
+        public IActionResult GetRequestHistory()
+        {
+            var history = _queueService.GetRequestHistory();
+            return Ok(history);
+        }
     }
 }

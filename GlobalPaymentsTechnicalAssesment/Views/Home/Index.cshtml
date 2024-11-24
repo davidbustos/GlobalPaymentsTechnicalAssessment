@@ -13,21 +13,57 @@
             document.getElementById('position').innerText = `Position: ${data.position.toFixed(2)} meters`;
         }
 
+        async function pollQueueAndHistory() {
+            const queueResponse = await fetch('/api/elevatorapi/queue');
+            const queueData = await queueResponse.json();
+
+            const historyResponse = await fetch('/api/elevatorapi/history');
+            const historyData = await historyResponse.json();
+
+            // Update current queue
+            const queueList = document.getElementById('currentQueue');
+            queueList.innerHTML = '';
+            queueData.forEach(req => {
+                const li = document.createElement('li');
+                li.textContent = `Floor: ${req.floor}, Source: ${req.source}`;
+                queueList.appendChild(li);
+            });
+
+            // Update history log
+            const historyList = document.getElementById('historyLog');
+            historyList.innerHTML = '';
+            historyData.forEach(req => {
+                const li = document.createElement('li');
+                li.textContent = `Floor: ${req.floor}, Source: ${req.source}, Processed At: ${new Date(req.processedAt).toLocaleString()}`;
+                historyList.appendChild(li);
+            });
+        }
+
         setInterval(pollElevatorState, 500); // Poll every 500ms
+        setInterval(pollQueueAndHistory, 2000); // Poll every 2 seconds
     </script>
 </head>
 <body>
     <h1>Elevator Simulator</h1>
-    <p id="currentFloor">Current Floor: Loading...</p>
-    <p id="state">State: Loading...</p>
-    <p id="doorState">Door State: Loading...</p>
-    <p id="position">Position: Loading...</p>
+    <div>
+        <p id="currentFloor">Current Floor: Loading...</p>
+        <p id="state">State: Loading...</p>
+        <p id="doorState">Door State: Loading...</p>
+        <p id="position">Position: Loading...</p>
+    </div>
 
+    <h2>Controls</h2>
     <button onclick="requestFloor(1)">Go to Floor 1</button>
     <button onclick="requestFloor(2)">Go to Floor 2</button>
     <button onclick="requestFloor(3)">Go to Floor 3</button>
     <button onclick="requestFloor(4)">Go to Floor 4</button>
     <button onclick="requestFloor(5)">Go to Floor 5</button>
+
+    <h2>Current Queue</h2>
+    <ul id="currentQueue">Loading...</ul>
+
+    <h2>History Log</h2>
+    <ul id="historyLog">Loading...</ul>
 
     <script>
         async function requestFloor(floor) {

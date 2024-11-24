@@ -11,6 +11,12 @@ namespace GlobalPaymentsTechnicalAssesment.Services
     public class ElevatorService : IElevatorService
     {
         private readonly ElevatorState _state = new();
+        private readonly IQueueService _queueService;
+
+        public ElevatorService(IQueueService queueService)
+        {
+            _queueService = queueService;
+        }
 
         public async Task ProcessFloorRequestAsync(FloorRequest request)
         {
@@ -70,6 +76,9 @@ namespace GlobalPaymentsTechnicalAssesment.Services
 
             // Return to idle
             _state.State = "Idle";
+
+            // Add to history once processed
+            _queueService.AddToHistory(request);
         }
 
         public ElevatorState GetElevatorState()
