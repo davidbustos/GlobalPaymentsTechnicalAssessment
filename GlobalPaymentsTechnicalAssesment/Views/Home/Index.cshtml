@@ -20,32 +20,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.6.6/processing.min.js"></script>
     <script>
         let isInside = false; // Tracks whether the user is inside the elevator
+        let tripInProgress = false; // Tracks whether a trip is in progress
         let previousState = ""; // Tracks the previous state to detect state changes
 
         async function pollElevatorState() {
             const response = await fetch('/api/elevatorapi/state');
-            const data = await response.json();
+    const data = await response.json();
 
-            document.getElementById('currentFloor').innerText = `Current Floor: ${data.currentFloor}`;
-            document.getElementById('state').innerText = `State: ${data.state}`;
-            document.getElementById('doorState').innerText = `Door State: ${data.doorState}`;
-            document.getElementById('position').innerText = `Position: ${data.position.toFixed(2)} meters`;
+    // Debugging logs
+    console.log("Elevator State:", data);
+    console.log("isInside:", isInside, "tripInProgress:", tripInProgress);
 
-            // Handle state changes
-            if (data.state === "Idle" && data.doorState === "Closed") {
-                // If the trip is completed, reset to external controls
-                if (isInside) {
-                    isInside = false; // Exit the elevator
-                    document.getElementById('fromFloor').value = data.currentFloor; // Update dropdown to current floor
-                    updateControls(); // Switch to external controls
-                }
-            }
+    // Update UI elements
+    document.getElementById('currentFloor').innerText = `Current Floor: ${data.currentFloor}`;
+    document.getElementById('state').innerText = `State: ${data.state}`;
+    document.getElementById('doorState').innerText = `Door State: ${data.doorState}`;
+    document.getElementById('position').innerText = `Position: ${data.position.toFixed(2)} meters`;
 
-            // Transition to internal controls when the doors are opened
-            if (data.doorState === "Opened" && !isInside) {
-                isInside = true;
-                updateControls(); // Switch to internal controls
-            }
+    // Handle state changes
+    if (!isInside && data.doorState === "Opened") {
+        // User enters the elevator when doors open
+        isInside = true;
+        tripInProgress = false; // Reset trip status
+        updateControls(); // Switch to internal controls
+    } else if (isInside && data.state === "Moving" && !tripInProgress) {
+        // Start trip when the elevator starts moving
+        tripInProgress = true;
+    } else if (isInside && tripInProgress && data.state === "Idle" && data.doorState === "Closed") {
+        // Trip is complete
+        isInside = false; // User exits the elevator
+        tripInProgress = false; // Reset trip status
+        document.getElementById('fromFloor').value = data.currentFloor; // Update dropdown to current floor
+        updateControls(); // Switch to external controls
+    }
 
             previousState = data.state; // Update the previous state
 
@@ -95,36 +102,36 @@
         }
 
         function updateControls() {
-            const fromFloor = parseInt(document.getElementById('fromFloor').value);
-            const externalControls = document.getElementById('externalControls');
-            const internalControls = document.getElementById('internalControls');
+    const fromFloor = parseInt(document.getElementById('fromFloor').value);
+    const externalControls = document.getElementById('externalControls');
+    const internalControls = document.getElementById('internalControls');
 
-            // Show external or internal controls
-            if (!isInside) {
-                externalControls.style.display = 'block';
-                internalControls.style.display = 'none';
+    // Show external or internal controls based on `isInside`
+    if (!isInside) {
+        externalControls.style.display = 'block';
+        internalControls.style.display = 'none';
 
-                // Adjust buttons based on selected floor
-                if (fromFloor === 1) {
-                    externalControls.innerHTML = `<button class="btn btn-info" onclick="handleExternalRequest('Up')">Call Up</button>`;
-                } else if (fromFloor === 5) {
-                    externalControls.innerHTML = `<button class="btn btn-info" onclick="handleExternalRequest('Down')">Call Down</button>`;
-                } else {
-                    externalControls.innerHTML = `
-                        <button class="btn btn-info" onclick="handleExternalRequest('Up')">Call Up</button>
-                        <button class="btn btn-info" onclick="handleExternalRequest('Down')">Call Down</button>
-                    `;
-                }
-            } else {
-                externalControls.style.display = 'none';
-                internalControls.style.display = 'block';
-
-                // Render floor buttons
-                internalControls.innerHTML = [1, 2, 3, 4, 5]
-                    .map(floor => `<button class="btn btn-info" onclick="handleInternalRequest(${floor})">Go to Floor ${floor}</button>`)
-                    .join('');
-            }
+        // Adjust buttons for external controls based on floor
+        if (fromFloor === 1) {
+            externalControls.innerHTML = `<button onclick="handleExternalRequest('Up')" class="btn btn-primary">Call Up</button>`;
+        } else if (fromFloor === 5) {
+            externalControls.innerHTML = `<button onclick="handleExternalRequest('Down')" class="btn btn-secondary">Call Down</button>`;
+        } else {
+            externalControls.innerHTML = `
+                <button onclick="handleExternalRequest('Up')" class="btn btn-primary">Call Up</button>
+                <button onclick="handleExternalRequest('Down')" class="btn btn-secondary">Call Down</button>
+            `;
         }
+    } else {
+        externalControls.style.display = 'none';
+        internalControls.style.display = 'block';
+
+        // Render buttons for internal controls
+        internalControls.innerHTML = [1, 2, 3, 4, 5]
+            .map(floor => `<button onclick="handleInternalRequest(${floor})" class="btn btn-success">Go to Floor ${floor}</button>`)
+            .join('');
+    }
+}
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('fromFloor').addEventListener('change', updateControls);
