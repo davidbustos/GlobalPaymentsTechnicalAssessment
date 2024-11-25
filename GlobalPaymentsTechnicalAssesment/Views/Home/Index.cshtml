@@ -52,7 +52,7 @@
                  // Update Processing sketch
         const sketch = Processing.getInstanceById('elevatorSketch');
         if (sketch) {
-            sketch.updateElevator(data.currentFloor - 1, data.state, data.doorState); // Map floor to position
+            sketch.updateElevator(data.currentFloor, data.state, data.doorState); // Map floor to position
         }
         }
 
@@ -195,7 +195,8 @@
             }
 
             // Draw elevator
-            fill(moving ? color(0, 255, 0) : color(255, 0, 0)); // Green if moving, red if idle
+            @* fill(moving ? color(0, 255, 0) : color(255, 0, 0)); // Green if moving, red if idle *@
+            fill(doorState === "Closed" ? color(255, 0, 0) : color(0, 255, 0)); // Green if moving, red if idle
             rect(55, elevatorY, 90, floorHeight - 2);
 
             // Display door state
