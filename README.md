@@ -1,37 +1,33 @@
 
-# Elevator Simulator
+# Elevator Simulation Solution
+This repository contains a robust elevator simulation system implemented in **ASP.NET Core**. 
+It demonstrates a well-designed architecture with **object-oriented design patterns**, 
+background task processing using **Hosted Services**, and **NUnit tests** for thorough validation  and **Processing.js** for visualization.
 
-## Overview
-This is a C#-based Elevator Simulator that uses ASP.NET Core MVC for the backend and Processing.js for real-time visualization on the front-end. The application simulates an elevator system with five floors, tracking states like position, movement, and door status. The UI allows users to interact with the elevator via external and internal controls.
+![Architecture Diagram](./images/screenshotui.PNG)
+
+---
 
 ## Features
-1. **Elevator State Tracking**:
-   - Tracks current floor, movement status, and door state.
-   - Displays elevator state in real-time on the UI.
 
-2. **Controls**:
-   - **External Controls**: "Call Up" and "Call Down" buttons for floors 2-4, "Call" button for floors 1 and 5.
-   - **Internal Controls**: Buttons to select target floors once inside the elevator.
+- **Elevator Request Queue**: Manages floor requests using a thread-safe `ConcurrentQueue`.
+- **Background Processing**: Simulates elevator movement and processes requests asynchronously.
+- **Object-Oriented Design**: Separates responsibilities using `QueueService`, `ElevatorService`, and API controllers.
+- **UI with Polling**: Real-time updates of elevator state via an HTML page and Processing.js for visualization.
+- **Unit Tests**: Comprehensive test coverage using NUnit.
 
-3. **Queue and History Logs**:
-   - Displays the current queue of pending requests.
-   - Logs and displays the history of processed requests.
-
-4. **Real-Time Visualization**:
-   - A Processing.js sketch visually represents the elevator, including movement and door states.
-
-5. **Dynamic Polling**:
-   - Uses AJAX polling to update elevator states, queue, and history logs every few seconds.
+---
 
 ## Architecture
-- **Backend**: ASP.NET Core MVC with services for handling queue management and elevator logic.
-- **Frontend**: HTML, JavaScript, and Processing.js for visualization.
-- **Real-Time Communication**: Polling using JavaScript to fetch and update the elevator state.
-- **Design Patterns**: Implements dependency injection, services, and separation of concerns for modularity.
 
-## File Structure
+Below is the architecture diagram for the solution:
+
+![Architecture Diagram](./images/architectureDiagram.png)
+
+### **Project Structure**
+
 ```
-.
+GlobalPaymentsTechnicalAssesment/
 ├── Controllers/
 │   ├── ElevatorApiController.cs      # API Controller for elevator requests
 │   ├── ElevatorSimulationController.cs # Main view controller
@@ -46,7 +42,6 @@ This is a C#-based Elevator Simulator that uses ASP.NET Core MVC for the backend
 │   ├── ElevatorSimulator/
 │       ├── Index.cshtml              # Main UI
 ├── wwwroot/
-│   ├── elevator-sketch.js            # Processing.js sketch
 │   ├── scripts.js                    # JavaScript for UI updates
 ├── Tests/
 │   ├── ElevatorApiControllerTests.cs # Unit tests for the API
@@ -54,51 +49,82 @@ This is a C#-based Elevator Simulator that uses ASP.NET Core MVC for the backend
 │   ├── QueueServiceTests.cs          # Unit tests for queue service
 ```
 
-## How to Run
+---
+
+## Setup
+
+### Prerequisites
+
+1. .NET SDK 8.0 or higher.
+2. Visual Studio 2022 (or any IDE supporting .NET Core).
+3. Optional: Postman or cURL for testing the API.
+
+### Getting Started
 
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd ElevatorSimulator
+   cd GlobalPaymentsTechnicalAssesment
    ```
 
-2. Restore dependencies:
-   ```bash
-   dotnet restore
-   ```
-
-3. Run the application:
+2. Build and run the application:
    ```bash
    dotnet run
    ```
 
-4. Access the application in your browser at `http://localhost:5000`.
+3. Open your browser and navigate to:
+   - **UI**: [http://localhost:5000](http://localhost:5000)
+   - **API Endpoints**: [http://localhost:5000/api/elevatorapi](http://localhost:5000/api/elevatorapi)
 
-## Processing.js Visualization
-The right-side panel of the UI displays a real-time visualization of the elevator using Processing.js. The sketch dynamically updates based on the elevator's position, movement, and door state.
+---
 
-## Unit Tests
-The solution includes NUnit tests for:
-- Elevator state transitions
-- Queue management
-- API request handling
+## API Endpoints
 
-Run the tests using:
-```bash
-dotnet test
-```
+### **1. Add Floor Request**
+- **Endpoint**: `POST /api/elevatorapi/request-floor`
+- **Request Body**:
+   ```json
+   {
+       "Source": "External",
+       "Floor": 3
+   }
+   ```
+- **Response**:
+   ```json
+   "Request added to queue."
+   ```
+
+### **2. Get Elevator State**
+- **Endpoint**: `GET /api/elevatorapi/state`
+- **Response**:
+   ```json
+   {
+       "CurrentFloor": 3,
+       "State": "Idle"
+   }
+   ```
+
+---
+
+## Testing
+
+### Unit Tests
+
+1. Navigate to the test project directory:
+   ```bash
+   cd GlobalPaymentsTechnicalAssesment.Tests
+   ```
+
+2. Run all tests:
+   ```bash
+   dotnet test
+   ```
+---
 
 ## Future Enhancements
-- Improve visualization with animations for smoother transitions.
-- Add configuration options for elevator parameters (e.g., door open/close time, speed).
-- Implement WebSocket support for real-time updates instead of polling.
 
-## Acknowledgments
-- **Processing.js** for graphical visualization.
-- **NUnit** for unit testing.
+- **Persistent Queue**: Integrate RabbitMQ or MSMQ for durable messaging.
+- **Advanced State Handling**: Add features like optimize routing logic, door operations, emergency stops, etc.
+- **Enhanced UI**: Provide better visuals for the elevator simulation.
 
-## Diagram
-![Architecture Diagram](diagram.png)
-
-## License
-MIT License
+---
