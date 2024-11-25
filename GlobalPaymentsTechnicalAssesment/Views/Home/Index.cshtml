@@ -106,13 +106,13 @@
 
                 // Adjust buttons based on selected floor
                 if (fromFloor === 1) {
-                    externalControls.innerHTML = `<button onclick="handleExternalRequest('Up')">Call Up</button>`;
+                    externalControls.innerHTML = `<button class="btn btn-info" onclick="handleExternalRequest('Up')">Call Up</button>`;
                 } else if (fromFloor === 5) {
-                    externalControls.innerHTML = `<button onclick="handleExternalRequest('Down')">Call Down</button>`;
+                    externalControls.innerHTML = `<button class="btn btn-info" onclick="handleExternalRequest('Down')">Call Down</button>`;
                 } else {
                     externalControls.innerHTML = `
-                        <button onclick="handleExternalRequest('Up')">Call Up</button>
-                        <button onclick="handleExternalRequest('Down')">Call Down</button>
+                        <button class="btn btn-info" onclick="handleExternalRequest('Up')">Call Up</button>
+                        <button class="btn btn-info" onclick="handleExternalRequest('Down')">Call Down</button>
                     `;
                 }
             } else {
@@ -121,7 +121,7 @@
 
                 // Render floor buttons
                 internalControls.innerHTML = [1, 2, 3, 4, 5]
-                    .map(floor => `<button onclick="handleInternalRequest(${floor})">Go to Floor ${floor}</button>`)
+                    .map(floor => `<button class="btn btn-info" onclick="handleInternalRequest(${floor})">Go to Floor ${floor}</button>`)
                     .join('');
             }
         }
@@ -195,7 +195,6 @@
             }
 
             // Draw elevator
-            @* fill(moving ? color(0, 255, 0) : color(255, 0, 0)); // Green if moving, red if idle *@
             fill(doorState === "Closed" ? color(255, 0, 0) : color(0, 255, 0)); // Green if moving, red if idle
             rect(55, elevatorY, 90, floorHeight - 2);
 
@@ -217,8 +216,9 @@
 </head>
 <body>
 
-    <div style="display: flex; justify-content: space-between;">
-        <div>
+    @* <div style="display: flex; justify-content: space-between;"> *@
+    <div class="row">
+        <div class="col">
             <!-- Existing UI content -->
             <h1>Elevator Simulator</h1>
             <div>
@@ -229,14 +229,17 @@
             </div>
 
             <h2>Controls</h2>
-            <label for="fromFloor">From Floor:</label>
-            <select id="fromFloor">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-            </select>
+            <div class="d-inline-flex align-items-center">
+                <label for="fromFloor" class="form-label me-2">From Floor:</label>
+                <select id="fromFloor" class="form-select w-auto">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+
 
             <div id="externalControls" style="display: none;"></div>
             <div id="internalControls" style="display: none;"></div>
@@ -248,7 +251,9 @@
             <ul id="historyLog">Loading...</ul>
             <!-- Other elements -->
         </div>
-        <canvas id="elevatorSketch" style="border: 1px solid #ccc;"></canvas>
+        <div class="col">
+            <canvas id="elevatorSketch" style="border: 1px solid #ccc;"></canvas>
+        </div>
     </div>
 
     
