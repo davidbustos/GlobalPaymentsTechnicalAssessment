@@ -128,7 +128,7 @@
 
         // Render buttons for internal controls
         internalControls.innerHTML = [1, 2, 3, 4, 5]
-            .map(floor => `<button onclick="handleInternalRequest(${floor})" class="btn btn-success">Go to Floor ${floor}</button>`)
+            .map(floor => `<button onclick="handleInternalRequest(${floor})" class="btn btn-success" style="margin: 0px 2px 0px 2px;">Go to Floor ${floor}</button>`)
             .join('');
     }
 }
@@ -248,8 +248,8 @@
             </div>
 
 
-            <div id="externalControls" style="display: none;"></div>
-            <div id="internalControls" style="display: none;"></div>
+            <div id="externalControls" style="display: none;margin-top:5px"></div>
+            <div id="internalControls" style="display: none;margin-top:5px"></div>
 
             <h2>Current Queue</h2>
             <ul id="currentQueue">Loading...</ul>
