@@ -1,7 +1,23 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #elevatorSketch {
+            width: 200px;
+            height: 400px;
+        }
+    </style>
+
     <title>Elevator Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.6.6/processing.min.js"></script>
     <script>
         let isInside = false; // Tracks whether the user is inside the elevator
         let previousState = ""; // Tracks the previous state to detect state changes
@@ -32,6 +48,12 @@
             }
 
             previousState = data.state; // Update the previous state
+
+                 // Update Processing sketch
+        const sketch = Processing.getInstanceById('elevatorSketch');
+        if (sketch) {
+            sketch.updateElevator(data.currentFloor - 1, data.state, data.doorState); // Map floor to position
+        }
         }
 
         async function handleExternalRequest(direction) {
@@ -143,33 +165,91 @@
         }
     </script>
 
+
+    <script type="application/processing" data-processing-target="elevatorSketch">
+        // Variables for elevator visualization
+        float elevatorY; // Elevator's vertical position
+        int totalFloors = 5; // Number of floors
+        float floorHeight; // Height of each floor
+        String doorState = "Closed"; // Door state
+        boolean moving = false; // Elevator movement state
+
+        void setup() {
+            size(200, 400); // Canvas size
+            floorHeight = height / totalFloors; // Calculate floor height
+            elevatorY = height - floorHeight; // Start at ground floor
+            smooth();
+        }
+
+        void draw() {
+            background(240); // Light background
+
+            // Draw elevator shaft
+            fill(200);
+            rect(50, 0, 100, height);
+
+            // Draw floors
+            stroke(180);
+            for (int i = 0; i <= totalFloors; i++) {
+                line(50, i * floorHeight, 150, i * floorHeight);
+            }
+
+            // Draw elevator
+            fill(moving ? color(0, 255, 0) : color(255, 0, 0)); // Green if moving, red if idle
+            rect(55, elevatorY, 90, floorHeight - 2);
+
+            // Display door state
+            fill(0);
+            textSize(12);
+            textAlign(CENTER);
+            text("Doors: " + doorState, width / 2, height - 10);
+        }
+
+        // Function to update elevator state
+        void updateElevator(float position, String state, String doors) {
+            elevatorY = height - (position * floorHeight); // Map position to canvas
+            moving = state.equals("Moving");
+            doorState = doors;
+        }
+    </script>
+
 </head>
 <body>
-    <h1>Elevator Simulator</h1>
-    <div>
-        <p id="currentFloor">Current Floor: Loading...</p>
-        <p id="state">State: Loading...</p>
-        <p id="doorState">Door State: Loading...</p>
-        <p id="position">Position: Loading...</p>
+
+    <div style="display: flex; justify-content: space-between;">
+        <div>
+            <!-- Existing UI content -->
+            <h1>Elevator Simulator</h1>
+            <div>
+                <p id="currentFloor">Current Floor: Loading...</p>
+                <p id="state">State: Loading...</p>
+                <p id="doorState">Door State: Loading...</p>
+                <p id="position">Position: Loading...</p>
+            </div>
+
+            <h2>Controls</h2>
+            <label for="fromFloor">From Floor:</label>
+            <select id="fromFloor">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+
+            <div id="externalControls" style="display: none;"></div>
+            <div id="internalControls" style="display: none;"></div>
+
+            <h2>Current Queue</h2>
+            <ul id="currentQueue">Loading...</ul>
+
+            <h2>History Log</h2>
+            <ul id="historyLog">Loading...</ul>
+            <!-- Other elements -->
+        </div>
+        <canvas id="elevatorSketch" style="border: 1px solid #ccc;"></canvas>
     </div>
 
-    <h2>Controls</h2>
-    <label for="fromFloor">From Floor:</label>
-    <select id="fromFloor">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-    </select>
-
-    <div id="externalControls" style="display: none;"></div>
-    <div id="internalControls" style="display: none;"></div>
-
-    <h2>Current Queue</h2>
-    <ul id="currentQueue">Loading...</ul>
-
-    <h2>History Log</h2>
-    <ul id="historyLog">Loading...</ul>
+    
 </body>
 </html>
